@@ -1,0 +1,71 @@
+From: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+To: linux-kernel@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: chrome-platform@lists.linux.dev,
+	Patrick Georgi <pgeorgi@chromium.org>,
+	Julius Werner <jwerner@chromium.org>,
+	Tzung-Bi Shih <tzungbi@kernel.org>,
+	Samuel Holland <samuel@sholland.org>,
+	coreboot@coreboot.org,
+	Brian Norris <briannorris@chromium.org>,
+	Alper Nebi Yasak <alpernebiyasak@gmail.com>
+Subject: [PATCH] firmware: coreboot: framebuffer: Avoid invalid zero physical address
+Date: Wed,  8 Nov 2023 21:25:13 +0300
+Message-ID: <20231108182625.46563-1-alpernebiyasak@gmail.com>
+X-Mailer: git-send-email 2.42.0
+Precedence: bulk
+X-Mailing-List: chrome-platform@lists.linux.dev
+List-Id: <chrome-platform.lists.linux.dev>
+List-Subscribe: <mailto:chrome-platform+subscribe@lists.linux.dev>
+List-Unsubscribe: <mailto:chrome-platform+unsubscribe@lists.linux.dev>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+On ARM64 systems coreboot defers framebuffer allocation to its payload,
+to be done by a libpayload function call. In this case, coreboot tables
+still include a framebuffer entry with display format details, but the
+physical address field is set to zero (as in [1], for example).
+
+Unfortunately, this field is not automatically updated when the
+framebuffer is initialized through libpayload, citing that doing so
+would invalidate checksums over the entire coreboot table [2].
+
+This can be observed on ARM64 Chromebooks with stock firmware. On a
+Google Kevin (RK3399), trying to use coreboot framebuffer driver as
+built-in to the kernel results in a benign error. But on Google Hana
+(MT8173) and Google Cozmo (MT8183) it causes a hang.
+
+When the framebuffer physical address field in the coreboot table is
+zero, we have no idea where coreboot initialized a framebuffer, or even
+if it did. Instead of trying to set up a framebuffer located at zero,
+return ENODEV to indicate that there isn't one.
+
+[1] https://review.coreboot.org/c/coreboot/+/17109
+[2] https://review.coreboot.org/c/coreboot/+/8797
+
+Signed-off-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+---
+(I was previously told on #coreboot IRC that I could add coreboot
+mailing list to CC for kernel patches related to coreboot.)
+
+ drivers/firmware/google/framebuffer-coreboot.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/firmware/google/framebuffer-coreboot.c b/drivers/firmware/google/framebuffer-coreboot.c
+index c323a818805c..5c84bbebfef8 100644
+--- a/drivers/firmware/google/framebuffer-coreboot.c
++++ b/drivers/firmware/google/framebuffer-coreboot.c
+@@ -36,6 +36,9 @@ static int framebuffer_probe(struct coreboot_device *dev)
+ 		.format = NULL,
+ 	};
+ 
++	if (!fb->physical_address)
++		return -ENODEV;
++
+ 	for (i = 0; i < ARRAY_SIZE(formats); ++i) {
+ 		if (fb->bits_per_pixel     == formats[i].bits_per_pixel &&
+ 		    fb->red_mask_pos       == formats[i].red.offset &&
+
+base-commit: 2220f68f4504aa1ccce0fac721ccdb301e9da32f
+-- 
+2.42.0

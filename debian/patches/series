@@ -118,3 +118,4 @@ bugfix/powerpc/fbdev-offb-Update-expected-device-name.patch
 # ABI maintenance
 
 features/arm64/cherry-display.patch
+bugfix/arm64/coreboot.patch
