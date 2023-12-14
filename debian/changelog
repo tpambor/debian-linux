@@ -60,6 +60,24 @@ linux (6.6.7-1~exp1) UNRELEASED; urgency=medium
   * Set CONFIG_VIRTIO_FS and its dependencies to builtin, to allow building
     images that boot directly to rootfs (skipping the initrd)
 
+  [ Tim Pambor ]
+  * Enable configs for MT8195 Chromebooks:
+    - COMMON_CLK_MT8195 as built-in
+    - COMMON_CLK_MT8195_APUSYS, COMMON_CLK_MT8195_AUDSYS,
+      COMMON_CLK_MT8195_IMP_IIC_WRAP, COMMON_CLK_MT8195_MFGCFG, 
+      COMMON_CLK_MT8195_MSDC, COMMON_CLK_MT8195_SCP_ADSP, 
+      COMMON_CLK_MT8195_VDOSYS, COMMON_CLK_MT8195_VPPSYS,
+      COMMON_CLK_MT8195_CAMSYS, COMMON_CLK_MT8195_IMGSYS,
+      COMMON_CLK_MT8195_WPESYS, COMMON_CLK_MT8195_VDECSYS, 
+      COMMON_CLK_MT8195_VENCSYS as modules
+    - MFD_MT6360, REGULATOR_MT6315, REGULATOR_MT6359,
+      REGULATOR_CROS_EC, MTK_LVTS_THERMAL as modules
+    - MTK_ADSP_MBOX, MTK_ADSP_IPC, SND_SOC_SOF_OF, SND_SOC_MT8195,
+      SND_SOC_MT8195_MT6359, SND_SOC_SOF_MT8195 as modules
+    - SND_SOC_SOF_TOPLEVEL, SND_SOC_SOF_MTK_TOPLEVEL as built-in
+    - DRM_MEDIATEK_DP, PHY_MTK_DP, PHY_MTK_PCIE, PHY_MTK_UFS as modules
+    - PINCTRL_MT8195, PCIE_MEDIATEK_GEN3, SPMI_MTK_PMIF as built-in
+
  -- Bastian Blank <waldi@debian.org>  Thu, 07 Dec 2023 19:44:53 +0100
 
 linux (6.6.4-1~exp1) experimental; urgency=medium
